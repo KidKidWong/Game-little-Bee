@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        li{
+            list-style: none;
+        }
+        #div1{
+            width: 800px;
+            height: 600px;
+            overflow: hidden;
+            background: black;
+            margin: 20px auto;
+            position: relative;
+        }
+        #gameBtn{
+            color: white;
+            font-size:20px;
+            cursor: pointer;
+            border: 1px solid #FFFFFF;
+            width: 100px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            position: absolute;
+            top: 285px;
+            left: 350px;
+        }
+        #score{
+            color:white;
+            font-size: 20px;
+        }
+        #bee{
+            position: absolute;
+        }
+        .enemy1{
+            width: 40px;
+            height: 28px;
+            background-image: url("images/yellowBee.png");
+            background-repeat:no-repeat;
+            background-position: center center;
+            float: left;
+            background-size:40px 40px ;
+        }
+        .enemy2{
+            width: 40px;
+            height: 28px;
+            /*background: url(images/blueBee.png) 0 0 no-repeat;*/
+            background-image: url("images/blueBee.png");
+            background-repeat:no-repeat;
+            background-position: center center;
+            float: left;
+            background-size:40px 40px ;
+        }
+        .enemy3{
+            width: 40px;
+            height: 28px;
+            background-image:url("images/redBee.png");
+            background-repeat:no-repeat;
+            background-position: center center;
+            float: left;
+            background-size:40px 40px ;
+        }
+        .airplane{
+            width: 60px;
+            height: 60px;
+            background-image:url("images/airplane.png");
+            background-repeat:no-repeat;
+            background-position: 0px 0px;
+            background-size:60px 60px ;
+            position: absolute;
+        }
+        .bullet{
+            width: 1px;
+            height: 10px;
+            overflow: hidden;
+            background: white;
+            position: absolute;
+        }
+
+    </style>
+</head>
+<body>
+<div id="div1">
+    <div id="gameBtn">开始游戏</div>
+</div>
+</body>
+<script>
+    window.onload=function () {
+        var button=document.getElementById("gameBtn");//获取游戏开始按钮
+        button.onclick=function () {
+            this.style.display="none";//游戏开始以后按钮消失
+            Game.initial("div1"); //游戏开始
+
+        }
+
+        //游戏代码，json格式
+        var Game={
+            oEnemy:{ //敌人的数据
+                e1:{
+                    style:"enemy1",blood:1,speed:5,score:1
+                },
+                e2:{
+                    style:"enemy2",blood:2,speed:7,score:2
+                },
+                e3:{
+                    style:"enemy3",blood:3,speed:10,score:3
+                }
+            },
+            gk:[ //关卡的数据
+                { //第一关的数据：
+                    eMap:[
+                        "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2",
+                        "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2",
+                        "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2", "e2",
+                        "e1","e1","e1","e1","e1","e1","e1","e1","e1","e1",
+                        "e1","e1","e1","e1","e1","e1","e1","e1","e1","e1",
+                        "e1","e1","e1","e1","e1","e1","e1","e1","e1","e1",
+                    ],
+                    colNum:10,//几列小蜜蜂
+                    iSpeedX:10,//小蜜蜂移动速度
+                    iSpeedY:10,
+                    times:2000 //小蜜蜂每隔几秒飞下来
+                },//第二关的数据
+                {
+                    eMap:[
+                        "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3",
+                        "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3",
+                        "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3", "e3",
+                        "e1","e1","e1","e1","e1","e1","e1","e1","e1","e1",
+                        "e1","e1","e1","e1","e1","e1","e1","e1","e1","e1",
+                        "e1","e1","e1","e1","e1","e1","e1","e1","e1","e1",
+                    ],
+                    colNum:10,//几列小蜜蜂
+                    iSpeedX:10,//小蜜蜂移动速度
+                    iSpeedY:10,
+                    times:2000 //小蜜蜂每隔几秒飞下来
+                }
+
+            ],
+
+            //飞机的数据
+            plane:{
+                style:"airplane",
+                bulletStyle:"bullet"
+            },
+            initial:function (id) { //游戏初始化
+                this.oParent=document.getElementById(id);//将获取到的元素变成game的属性，这样其他地方就可以调用这个属性了。？
+                this.createScore();//调用积分创建函数
+                this.createEnemy(0);//调用敌人创建函数.0代表第一关
+                this.createAirplane();//调用飞机创建函数
+            },
+            //创建积分的函数：
+            createScore:function () { //创建积分盒子
+                var oS=document.createElement("div");//创建score的div盒子
+                oS.id="score"; //设置id为score。前面已经定义好了score的样式
+                oS.innerHTML="积分：<span>0</span>"//定义score盒子里面的内容
+                this.oParent.appendChild(oS);//将整个score盒子放进最大的那个盒子
+                this.oSNumber=oS.getElementsByTagName("span")[0];//获取盒子里面的积分.变成全局变量，其他地方可以调用该变量
+            },
+
+            //创建敌人的函数：
+            createEnemy:function (iNow) { //iNow表示第几关
+                var gk=this.gk[iNow];//获取第一关的数据
+                var arr=[];
+                var ulBee=document.createElement("ul");//创建敌人的大盒子
+                this.oUl=ulBee;//让敌人大盒子变成game的属性，以便外面的人调用敌人大盒子
+                ulBee.id="bee";//设置敌人大盒子的样式
+                ulBee.style.width=gk.colNum*40+"px";//计算出大盒子的宽度。即一行小蜜蜂的个数乘以小蜜蜂的宽度
+                this.oParent.appendChild(ulBee);//将敌人大盒子添加到最大的那个盒子里面
+                ulBee.style.left=(this.oParent.offsetWidth-ulBee.offsetWidth)/2+"px";//求出蜜蜂大盒子左边距，让蜜蜂大盒子居中
+
+                for(var i=0;i<gk.eMap.length;i++){ //创建所有小蜜蜂
+                    var oLi=document.createElement("li");//创建li
+                    oLi.className=this.oEnemy[gk.eMap[i]].style;
+                    oLi.blood=this.oEnemy[gk.eMap[i]].blood;
+                    oLi.speed=this.oEnemy[gk.eMap[i]].speed;
+                    oLi.score=this.oEnemy[gk.eMap[i]].score;
+                    ulBee.appendChild(oLi);
+                }
+                this.oLi=ulBee.getElementsByTagName("li");// 将每个小蜜蜂变成全局变量。以便其他地方调用
+
+                //以下两个for循环不明白
+                for(var i=0;i<this.oLi.length;i++){
+                    arr.push([this.oLi[i].offsetLeft,this.oLi[i].offsetTop])
+                };
+                for(var i=0;i<this.oLi.length;i++){
+                    this.oLi[i].style.position="absolute";
+                    this.oLi[i].style.left=arr[i][0]+"px";
+                    this.oLi[i].style.top=arr[i][1]+"px";
+                }
+
+                this.runEnemy(gk);//让敌人盒子移动.传参gk，以便下面调用gk.调用gk的速度和蜜蜂每隔多久飞下来的时间
+            },
+            //蜜蜂大盒子移动函数
+            runEnemy:function (gk) { //让敌人盒子整个移动
+                var that=this;//保留this指向的对象。不然this会变成window
+
+                var L=0;//左边距为0时敌人大盒子就要向右移动
+                var R=this.oParent.offsetWidth-this.oUl.offsetWidth;
+
+                setInterval(function () {
+                   if(that.oUl.offsetLeft>R){  //说明移动到了最右边了
+                       gk.iSpeedX*=-1; //将速度变成负数
+                       that.oUl.style.top=that.oUl.offsetTop+gk.iSpeedY+"px";//到了最右边以后，往下移动一点
+                   }else if(that.oUl.offsetLeft<L){ //说明移动到了最左边了
+                       gk.iSpeedX*=-1;
+                       that.oUl.style.top=that.oUl.offsetTop+gk.iSpeedY+"px";//到了最左边以后，往下移动一点
+                   }
+                    that.oUl.style.left=that.oUl.offsetLeft+gk.iSpeedX+"px";
+                },200);
+                setInterval(function () {
+                    that.oneMove();//调用单兵作战函数
+                },gk.times) //gk.times是蜜蜂每隔多久飞下来一次。前面已经定义好了times。这里是调用times这个数据
+            },
+
+            //单兵作战函数
+            oneMove:function () {
+                var random=Math.floor(Math.random()*this.oLi.length);//随机所有小蜜蜂盒子的下标
+                var nowLi=this.oLi[random];//随机一个小蜜蜂盒子
+                var that=this;
+
+                nowLi.timer=setInterval(function () {
+                    //求直角三角形的a边
+                    var a=(that.airPlane.offsetLeft+that.airPlane.offsetWidth/2)-(nowLi.offsetLeft+
+                        nowLi.parentNode.offsetLeft+nowLi.offsetWidth/2);
+                    //求直角三角形的b边
+                    var b=(that.airPlane.offsetTop+that.airPlane.offsetHeight/2)-(nowLi.offsetTop+
+                        nowLi.parentNode.offsetTop+nowLi.offsetHeight/2);
+                    var c=Math.sqrt(a*a+b*b);//求出三角形的c边。c是直角三角形的斜边
+                    var speedH=nowLi.speed*a/c;//X轴的速度
+                    var speedV=nowLi.speed*b/c;//Y轴的速度
+
+                    nowLi.style.left=nowLi.offsetLeft+speedH+"px";
+                    nowLi.style.top=nowLi.offsetTop+speedV+"px";
+
+                    if(that.pz(that.airPlane,nowLi)){ //用碰撞函数检测子弹和飞下来的蜜蜂有没有碰撞
+                       alert("游戏结束");
+                       window.location.reload();//重新加载
+                    }
+                },30)
+            },
+            //飞机创建的函数
+            createAirplane:function () { //飞机的创建
+                var airPlane=document.createElement("div");//创建飞机盒子
+                airPlane.className=this.plane.style;//给飞机盒子添加class属性，设置样式。样式已经预先定义好了
+
+                this.airPlane=airPlane;//使这个函数里面创建的飞机盒子对象变成全局的，函数外面可以调用它
+
+                this.oParent.appendChild(airPlane);//将飞机盒子添加到最大的盒子中
+                airPlane.style.left=(this.oParent.offsetWidth-airPlane.offsetWidth)/2+"px";//飞机的左边距
+                airPlane.style.top=this.oParent.offsetHeight-airPlane.offsetHeight+"px";//飞机的上边距
+                this.bindAirplane();//操作飞机。创建好飞机以后操作飞机
+            },
+
+            //操作飞机的函数
+            bindAirplane:function () { //操作飞机。按键盘的左右键的时候可以左右移动
+                var timer=null; //定时器
+                var iNum=0;
+                var that=this;//保存this。以便函数调用
+                document.onkeydown=function (ev) { //键盘事件缺点：每按一次键盘，会卡顿，一卡一卡的
+                    var ev=window.event||ev;
+                    if(!timer){
+                        timer=setInterval(show,30);//让定时器每次只走一次
+                    };
+
+                    if(ev.keyCode==37){ //左键
+                        iNum=1;
+                    }else if(ev.keyCode==39){ //右键
+                        iNum=2;
+                    }
+                };
+                //下面这个事件是因为：不设置这个的话，连续触发onkeydown事件，按一下会连续移动很多下
+                document.onkeyup=function (ev) {
+                    clearInterval(timer);//键盘抬起，清除定时器
+                    timer=null;//设置这个是为了定时器下次能走。因为timer是一个数字，不是空
+                    iNum=0;
+
+                    //发子弹。设置在键盘抬起是因为：不会连续发子弹，键盘要按下并抬起才能发下一个子弹
+                    var ev=window.event||ev;
+                   if(ev.keyCode==32){ //空格按下事件。空格表示发子弹
+                       that.createBullet();//按下空格，调用子弹创建函数
+                   }
+                };
+                function show() {
+                    if(iNum==1){
+                        that.airPlane.style.left=that.airPlane.offsetLeft-10+"px";//左键，飞机往左移
+                    }else if(iNum==2){
+                        that.airPlane.style.left=that.airPlane.offsetLeft+10+"px";//右键，飞机往右移
+                    }
+                }
+            },
+
+            //子弹创建函数和子弹运动（子弹创建以后就运动）
+            createBullet:function () {
+                var oBullet=document.createElement("div");//创建子弹盒子
+                oBullet.className=this.plane.bulletStyle;//给子弹盒子添加样式，该样式已经预先定义好了
+                this.oParent.appendChild(oBullet);//将子弹盒子添加到大盒子。相对定位
+
+                //子弹左边距：飞机左边距+飞机自身宽度的一半（微调）
+                oBullet.style.left=this.airPlane.offsetLeft+this.airPlane.offsetWidth/2-8+"px";
+                //子弹上边距：飞机的上边距-子弹自身高度（微调）
+                oBullet.style.top=this.airPlane.offsetTop+10+"px";
+                this.runBullet(oBullet);//让子弹飞。将当前这个创建的子弹传参传进去。调用子弹运动函数
+            },
+
+            //子弹运动函数
+            runBullet:function (oBullet) { //参数接受当前子弹
+                var that=this;
+                   oBullet.timer=setInterval(function () {
+                       if(oBullet.offsetTop<-10){ //子弹跑出屏幕以后，清除子弹的定时器，并销毁该子弹盒子
+                           clearInterval(oBullet.timer);//清除定时器
+                           that.oParent.removeChild(oBullet);//移除子弹盒子
+                       }else{
+                           oBullet.style.top=oBullet.offsetTop-10+"px";}
+                           for(var i=0;i<that.oLi.length;i++){ //每一个子弹和左右的小蜜蜂进行碰撞检测
+                               if(that.pz(oBullet,that.oLi[i])){ //若为真，表示碰撞上了，删除掉该元素
+                                   //判断血量。血量为2表示须打两次才消失。血量已经存在了this.oli这个全局变量里面了
+                                   if(that.oLi[i].blood == 1){//血量为1.可以立刻删除该小蜜蜂盒子
+                                       clearInterval(that.oLi[i].timer);//关闭
+                                       that.oSNumber.innerHTML=parseInt(that.oSNumber.innerHTML)+that.oLi[i].score;//积分。积分属性已经定义好了在每个小蜜蜂盒子身上了
+                                       that.oUl.removeChild(that.oLi[i]);//碰上以后删掉该元素
+                                   }else{
+                                       that.oLi[i].blood--;
+                                   }
+                                   clearInterval(oBullet.timer);//停掉定时器（提高性能）
+                                   that.oParent.removeChild(oBullet);//删掉该子弹
+                               }
+                           }
+                    },30)
+                },
+            //碰撞检测的函数：
+            pz:function (obj1,obj2) {
+                //获取obj1的上下左右的边距
+                var L1=obj1.offsetLeft; //左边距
+                var R1=obj1.offsetLeft+obj1.offsetWidth; //右边距
+                var T1=obj1.offsetTop; //上边距
+                var B1=obj1.offsetTop+obj1.offsetHeight; //底边距
+
+                //获取obj2的上下左右的边距
+                var L2=obj2.offsetLeft+obj2.parentNode.offsetLeft; //左边距.每个li小蜜蜂盒子相对于蜜蜂大盒子定位，
+                //所以也要获取大蜜蜂盒子的左边距，加起来才是小蜜蜂盒子相对于大黑盒子的左边距。
+                //小蜜蜂的左边距和子弹的左边距都必须是同一个对照物：最大的黑盒子
+                var R2=obj2.offsetLeft+obj2.offsetWidth+obj2.parentNode.offsetLeft; //右边距
+                var T2=obj2.offsetTop+obj2.parentNode.offsetTop; //上边距
+                var B2=obj2.offsetTop+obj2.offsetHeight+obj2.parentNode.offsetTop; //底边距
+
+                if( R1<L2 || L1>R2 || B1<T2 || T1>B2){ //碰撞了的情况
+                    return false;
+                }else{
+                    return true; //碰不着
+                }
+            }
+            }
+        };
+</script>
+</html>
